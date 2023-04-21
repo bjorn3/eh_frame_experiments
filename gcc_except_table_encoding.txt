@@ -1,0 +1,252 @@
+https://github.com/llvm/llvm-project/blob/6469281100e654f690af8d5bcf0123e4105cafbe/libcxxabi/src/cxa_personality.cpp#L918
+https://github.com/llvm/llvm-project/blob/0905c567f0c7328780c727b470a92cda1ee54697/llvm/lib/CodeGen/AsmPrinter/EHStreamer.cpp#L381
+
+
+# Rust
+lpStartEncoding     ff DW_EH_PE_omit    (char)
+lpStart                funcStart        (lpStartEncoding)
+ttypeEncoding       ff DW_EH_PE_omit    (char)
+classInfoOffset        NULL             (ULEB128 if ttypeEncoding)
+
+callsiteEncoding    01 DW_EH_PE_uleb128 (char)
+callsiteTableLength 08                  (ULEB128)
+Call Site Table
+    start           01                  (callsiteEncoding)
+    length          17                  (callsiteEncoding)
+    landingPad      1a                  (callsiteEncoding)
+    actionEntry     00 cleanup          (ULEB128)
+
+    start           1a                  (callsiteEncoding)
+    length          05                  (callsiteEncoding)
+    landingPad      21                  (callsiteEncoding)
+    actionEntry     00 cleanup          (ULEB128)
+
+
+# C++
+
+# cleanup
+lpStartEncoding     ff DW_EH_PE_omit    (char)
+lpStart                funcStart        (lpStartEncoding)
+ttypeEncoding       ff DW_EH_PE_omit    (char)
+classInfoOffset        NULL             (ULEB128 if ttypeEncoding)
+
+callsiteEncoding    01 DW_EH_PE_uleb128 (char)
+callsiteTableLength 08                  (ULEB128)
+Call Site Table
+    start           11                  (callsiteEncoding)
+    length          05                  (callsiteEncoding)
+    landingPad      1d                  (callsiteEncoding)
+    actionEntry     00 cleanup          (ULEB128)
+
+    start           16                  (callsiteEncoding)
+    length          20                  (callsiteEncoding)
+    landingPad      00                  (callsiteEncoding)
+    actionEntry     00 cleanup          (ULEB128)
+
+# ~PrintOnDrop
+lpStartEncoding     ff DW_EH_PE_omit    (char)
+lpStart                funcStart        (lpStartEncoding)
+ttypeEncoding       03 DW_EH_PE_udata4  (char)
+classInfoOffset     0d                  (ULEB128 if ttypeEncoding)
+
+callsiteEncoding    01 DW_EH_PE_uleb128 (char)
+callsiteTableLength 04                  (ULEB128)
+Call Site Table
+    start           0c                  (callsiteEncoding)
+    length          0c                  (callsiteEncoding)
+    landingPad      23                  (callsiteEncoding)
+    actionEntry     01                  (ULEB128)
+
+Action Table
+    ttypeIndex      01 catch            (SLEB128)
+    actionOffset    00                  (SLEB128)
+
+padding             00
+
+type_info Table
+                    00 00 00 00         (ttypeEncoding)
+
+# my_catch
+lpStartEncoding     ff DW_EH_PE_omit    (char)
+lpStart                funcStart        (lpStartEncoding)
+ttypeEncoding       03 DW_EH_PE_udata4  (char)
+classInfoOffset     11                  (ULEB128 if ttypeEncoding)
+
+callsiteEncoding    01 DW_EH_PE_uleb128 (char)
+callsiteTableLength 08                  (ULEB128)
+Call Site Table
+    start           08                  (callsiteEncoding)
+    length          05                  (callsiteEncoding)
+    landingPad      17                  (callsiteEncoding)
+    actionEntry     01                  (ULEB128)
+
+    start           0d                  (callsiteEncoding)
+    length          3e                  (callsiteEncoding)
+    landingPad      00                  (callsiteEncoding)
+    actionEntry     00 cleanup          (ULEB128)
+
+Action Table
+    ttypeIndex      01 catch            (SLEB128)
+    actionOffset    00                  (SLEB128)
+
+padding             00
+
+type_info Table
+                    R_X86_64_32 _ZTIPi  (ttypeEncoding)
+
+# catch_all
+lpStartEncoding     ff DW_EH_PE_omit    (char)
+lpStart                funcStart        (lpStartEncoding)
+ttypeEncoding       03 DW_EH_PE_udata4  (char)
+classInfoOffset     11                  (ULEB128 if ttypeEncoding)
+
+callsiteEncoding    01 DW_EH_PE_uleb128 (char)
+callsiteTableLength 08                  (ULEB128)
+Call Site Table
+    start           08                  (callsiteEncoding)
+    length          05                  (callsiteEncoding)
+    landingPad      17                  (callsiteEncoding)
+    actionEntry     01                  (ULEB128)
+
+    start           0d                  (callsiteEncoding)
+    length          25                  (callsiteEncoding)
+    landingPad      00                  (callsiteEncoding)
+    actionEntry     00 cleanup          (ULEB128)
+
+Action Table
+    ttypeIndex      01 catch            (SLEB128)
+    actionOffset    00                  (SLEB128)
+
+padding             00
+
+type_info Table
+                    00 00 00 00         (ttypeEncoding)
+
+# exception_spec
+lpStartEncoding     ff DW_EH_PE_omit    (char)
+lpStart                funcStart        (lpStartEncoding)
+ttypeEncoding       03 DW_EH_PE_udata4  (char)
+classInfoOffset     15                  (ULEB128 if ttypeEncoding)
+
+callsiteEncoding    01 DW_EH_PE_uleb128 (char)
+callsiteTableLength 08                  (ULEB128)
+Call Site Table
+    start           08                  (callsiteEncoding)
+    length          05                  (callsiteEncoding)
+    landingPad      14                  (callsiteEncoding)
+    actionEntry     01                  (ULEB128)
+
+    start           0d                  (callsiteEncoding)
+    length          2a                  (callsiteEncoding)
+    landingPad      00                  (callsiteEncoding)
+    actionEntry     00 cleanup          (ULEB128)
+
+Action Table
+    ttypeIndex      7f exception spec   (SLEB128)
+    actionOffset    00                  (SLEB128)
+
+padding             00
+
+type_info Table
+                    R_X86_64_32 _ZTIi   (ttypeEncoding)
+                    R_X86_64_32 _ZTIPc  (ttypeEncoding)
+exception specs
+    1st except spec
+    ttypeIndex      01                  (ULEB128)
+    ttypeIndex      02                  (ULEB128)
+    end             00
+
+padding             00
+
+# exception_spec_and_catch
+lpStartEncoding     ff DW_EH_PE_omit    (char)
+lpStart                funcStart        (lpStartEncoding)
+ttypeEncoding       03 DW_EH_PE_udata4  (char)
+classInfoOffset     1d                  (ULEB128 if ttypeEncoding)
+
+callsiteEncoding    01 DW_EH_PE_uleb128 (char)
+callsiteTableLength 08                  (ULEB128)
+Call Site Table
+    start           08                  (callsiteEncoding)
+    length          05                  (callsiteEncoding)
+    landingPad      17                  (callsiteEncoding)
+    actionEntry     03                  (ULEB128)
+
+    start           0d                  (callsiteEncoding)
+    length          51                  (callsiteEncoding)
+    landingPad      00                  (callsiteEncoding)
+    actionEntry     00                  (ULEB128)
+
+Action Table
+    ttypeIndex      7f exception spec   (SLEB128)
+    actionOffset    00                  (SLEB128)
+
+    ttypeIndex      03                  (SLEB128)
+    actionOffset    7d                  (SLEB128)
+
+padding             00 00 00
+
+type_info Table
+                    R_X86_64_32 _ZTIPs
+                    R_X86_64_32 _ZTIi
+                    R_X86_64_32 _ZTIPc
+
+exception specs
+    1st except spec
+    ttypeIndex      01                  (ULEB128)
+    ttypeIndex      02                  (ULEB128)
+    end             00
+
+padding             00
+
+# exception_spec_and_catch_and_cleanup
+lpStartEncoding     ff DW_EH_PE_omit    (char)
+lpStart                funcStart        (lpStartEncoding)
+ttypeEncoding       03 DW_EH_PE_udata4  (char)
+classInfoOffset     25                  (ULEB128 if ttypeEncoding)
+
+callsiteEncoding    01 DW_EH_PE_uleb128 (char)
+callsiteTableLength 0c                  (ULEB128)
+Call Site Table
+    start           08                  (callsiteEncoding)
+    length          09                  (callsiteEncoding)
+    landingPad      25                  (callsiteEncoding)
+    actionEntry     01                  (ULEB128)
+
+    start           16                  (callsiteEncoding)
+    length          05                  (callsiteEncoding)
+    landingPad      31                  (callsiteEncoding)
+    actionEntry     07                  (ULEB128)
+
+    start           1b                  (callsiteEncoding)
+    length          66                  (callsiteEncoding)
+    landingPad      00                  (callsiteEncoding)
+    actionEntry     00 cleanup          (ULEB128)
+
+Action Table
+    ttypeIndex      7f exception spec   (SLEB128)
+    actionOffset    00                  (SLEB128)
+
+    ttypeIndex      00                  (SLEB128)
+    actionOffset    00                  (SLEB128)
+
+    ttypeIndex      7f exception spec   (SLEB128)
+    actionOffset    7d                  (SLEB128)
+
+    ttypeIndex      03 catch            (SLEB128)
+    actionOffset    7d                  (SLEB128)
+
+padding             00 00 00
+
+type_info Table
+                    R_X86_64_32 _ZTIPs
+                    R_X86_64_32 _ZTIi
+                    R_X86_64_32 _ZTIPc
+
+exception specs
+    1st except spec
+    ttypeIndex      01                  (ULEB128)
+    ttypeIndex      02                  (ULEB128)
+    end             00
+
+padding             00
