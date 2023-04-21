@@ -135,8 +135,13 @@ fn main() {
     );
     obj.append_section_data(eh_frame_section, &eh_frame.0.into_vec(), 8);
 
+    let mut type_info = TypeInfoTable::new(DW_EH_PE_udata4);
+    let type1 = type_info.add(Address::Constant(0));
+    let type2 = type_info.add(Address::Constant(0));
+    let type3 = type_info.add(Address::Constant(0));
+
     let mut exception_specs = ExceptionSpecTable::new();
-    let exception_spec_id1 = exception_specs.add(ExceptionSpec(vec![TypeInfoId(0), TypeInfoId(1)]));
+    let exception_spec_id1 = exception_specs.add(ExceptionSpec(vec![type1, type2]));
 
     let mut actions = ActionTable::new();
     let action1 = actions.add(Action {
@@ -152,7 +157,7 @@ fn main() {
         next_action: Some(action2),
     });
     let action4 = actions.add(Action {
-        kind: ActionKind::Catch(TypeInfoId(2)),
+        kind: ActionKind::Catch(type3),
         next_action: Some(action3),
     });
 
@@ -178,14 +183,7 @@ fn main() {
             },
         ]),
         actions,
-        type_info: TypeInfoTable {
-            ttype_encoding: DW_EH_PE_udata4,
-            type_info: vec![
-                Address::Constant(0),
-                Address::Constant(0),
-                Address::Constant(0),
-            ],
-        },
+        type_info,
         exception_specs,
     };
 
@@ -446,6 +444,19 @@ struct TypeInfoTable {
 }
 
 impl TypeInfoTable {
+    fn new(ttype_encoding: gimli::DwEhPe) -> TypeInfoTable {
+        TypeInfoTable {
+            ttype_encoding,
+            type_info: vec![],
+        }
+    }
+
+    fn add(&mut self, type_info: Address) -> TypeInfoId {
+        let id = TypeInfoId(self.type_info.len() as u64);
+        self.type_info.push(type_info);
+        id
+    }
+
     fn encoded_size(&self, encoding: Encoding) -> u64 {
         let mut len = LenWriter(0);
         self.write(&mut len, encoding).unwrap();
