@@ -189,100 +189,9 @@ fn main() {
 
     let mut gcc_except_table = EndianVec::new(LittleEndian);
 
-    // lpStartEncoding
-    gcc_except_table.write_u8(DW_EH_PE_omit.0).unwrap();
-    // lpStart (omitted)
-    let type_info_padding = if gcc_except_table_data.type_info.type_info.is_empty() {
-        // ttypeEncoding
-        gcc_except_table.write_u8(DW_EH_PE_omit.0).unwrap();
-        None
-    } else {
-        // ttypeEncoding
-        gcc_except_table
-            .write_u8(gcc_except_table_data.type_info.ttype_encoding.0)
-            .unwrap();
-
-        // classInfoOffset
-        let class_info_offset_field_offset = gcc_except_table.len() as u64;
-
-        // Note: The offset in classInfoOffset is relative to position right after classInfoOffset
-        // itself.
-        let class_info_offset_no_padding = gcc_except_table_data.call_sites.encoded_size()
-            + gcc_except_table_data.actions.encoded_size()
-            + gcc_except_table_data.type_info.encoded_size(encoding);
-
-        let type_info_is_aligned = |type_info_padding: u64| {
-            (class_info_offset_field_offset
-                + gimli::leb128::write::uleb128_size(
-                    class_info_offset_no_padding + type_info_padding,
-                ) as u64
-                + gcc_except_table_data.call_sites.encoded_size()
-                + gcc_except_table_data.actions.encoded_size()
-                + type_info_padding)
-                % 4
-                == 0
-        };
-
-        let mut type_info_padding = 0;
-        while !type_info_is_aligned(type_info_padding) {
-            type_info_padding += 1;
-        }
-
-        gcc_except_table
-            .write_uleb128(class_info_offset_no_padding + type_info_padding)
-            .unwrap();
-
-        Some(type_info_padding)
-    };
-
-    // call site table
     gcc_except_table_data
-        .call_sites
-        .write(&mut gcc_except_table)
-        .unwrap();
-
-    // action table
-    gcc_except_table_data
-        .actions
-        .write(&mut gcc_except_table)
-        .unwrap();
-
-    // align to 4 bytes
-    if let Some(type_info_padding) = type_info_padding {
-        for _ in 0..type_info_padding {
-            gcc_except_table.write_u8(0).unwrap();
-        }
-        // In this case we calculated the expected padding amount and used it to write the
-        // classInfoOffset field. Assert that the expected value matched the actual value to catch
-        // any inconsistency.
-        assert!(
-            gcc_except_table.len() % 4 == 0,
-            "type_info must be aligned to 4 bytes"
-        );
-    } else {
-        while gcc_except_table.len() % 4 != 0 {
-            gcc_except_table.write_u8(0).unwrap();
-        }
-    }
-
-    // type_info
-    gcc_except_table_data
-        .type_info
         .write(&mut gcc_except_table, encoding)
         .unwrap();
-
-    // exception specs
-    gcc_except_table_data
-        .exception_specs
-        .write(&mut gcc_except_table)
-        .unwrap();
-
-    // TODO exception specifications
-
-    // align to 4 bytes
-    while gcc_except_table.len() % 4 != 0 {
-        gcc_except_table.write_u8(0).unwrap();
-    }
 
     let gcc_except_table_section = obj.add_section(
         b"".to_vec(),
@@ -299,6 +208,86 @@ struct GccExceptTable {
     actions: ActionTable,
     type_info: TypeInfoTable,
     exception_specs: ExceptionSpecTable,
+}
+
+impl GccExceptTable {
+    fn write<W: Writer>(&self, w: &mut W, encoding: Encoding) -> gimli::write::Result<()> {
+        // lpStartEncoding
+        w.write_u8(DW_EH_PE_omit.0)?;
+        // lpStart (omitted)
+        let type_info_padding = if self.type_info.type_info.is_empty() {
+            // ttypeEncoding
+            w.write_u8(DW_EH_PE_omit.0)?;
+            None
+        } else {
+            // ttypeEncoding
+            w.write_u8(self.type_info.ttype_encoding.0)?;
+
+            // classInfoOffset
+            let class_info_offset_field_offset = w.len() as u64;
+
+            // Note: The offset in classInfoOffset is relative to position right after classInfoOffset
+            // itself.
+            let class_info_offset_no_padding = self.call_sites.encoded_size()
+                + self.actions.encoded_size()
+                + self.type_info.encoded_size(encoding);
+
+            let type_info_is_aligned = |type_info_padding: u64| {
+                (class_info_offset_field_offset
+                    + gimli::leb128::write::uleb128_size(
+                        class_info_offset_no_padding + type_info_padding,
+                    ) as u64
+                    + self.call_sites.encoded_size()
+                    + self.actions.encoded_size()
+                    + type_info_padding)
+                    % 4
+                    == 0
+            };
+
+            let mut type_info_padding = 0;
+            while !type_info_is_aligned(type_info_padding) {
+                type_info_padding += 1;
+            }
+
+            w.write_uleb128(class_info_offset_no_padding + type_info_padding)?;
+
+            Some(type_info_padding)
+        };
+
+        // call site table
+        self.call_sites.write(w)?;
+
+        // action table
+        self.actions.write(w)?;
+
+        // align to 4 bytes
+        if let Some(type_info_padding) = type_info_padding {
+            for _ in 0..type_info_padding {
+                w.write_u8(0)?;
+            }
+            // In this case we calculated the expected padding amount and used it to write the
+            // classInfoOffset field. Assert that the expected value matched the actual value to catch
+            // any inconsistency.
+            assert!(w.len() % 4 == 0, "type_info must be aligned to 4 bytes");
+        } else {
+            while w.len() % 4 != 0 {
+                w.write_u8(0)?;
+            }
+        }
+
+        // type_info
+        self.type_info.write(w, encoding)?;
+
+        // exception specs
+        self.exception_specs.write(w)?;
+
+        // align to 4 bytes
+        while w.len() % 4 != 0 {
+            w.write_u8(0)?;
+        }
+
+        Ok(())
+    }
 }
 
 struct CallSiteTable(Vec<CallSite>);
