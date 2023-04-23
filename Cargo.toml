@@ -6,5 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-gimli = { version = "0.27.2", path = "gimli" }
+gimli = { version = "0.27.2" }
 object = { version = "0.31.0", features = ["write"] }
+
+[patch.crates-io]
+gimli = { path = "gimli" }
