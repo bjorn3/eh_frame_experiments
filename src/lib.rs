@@ -1,6 +1,7 @@
 use gimli::write::{Address, Writer};
 use gimli::{DW_EH_PE_omit, DW_EH_PE_uleb128, Encoding, LittleEndian};
 
+#[derive(Debug)]
 pub struct GccExceptTable {
     pub call_sites: CallSiteTable,
     pub actions: ActionTable,
@@ -88,6 +89,7 @@ impl GccExceptTable {
     }
 }
 
+#[derive(Debug)]
 pub struct CallSiteTable(pub Vec<CallSite>);
 
 impl CallSiteTable {
@@ -98,11 +100,7 @@ impl CallSiteTable {
     }
 
     fn write<W: Writer>(&self, w: &mut W) -> gimli::write::Result<()> {
-        let callsite_table_length = self
-            .0
-            .iter()
-            .map(|call_site| call_site.encoded_size())
-            .sum();
+        let callsite_table_length = self.0.iter().map(|call_site| call_site.encoded_size()).sum();
 
         // callsiteEncoding
         w.write_u8(DW_EH_PE_uleb128.0)?;
@@ -117,6 +115,7 @@ impl CallSiteTable {
     }
 }
 
+#[derive(Debug)]
 pub struct CallSite {
     pub start: u64,
     pub length: u64,
@@ -143,6 +142,7 @@ impl CallSite {
     }
 }
 
+#[derive(Debug)]
 pub struct ActionTable {
     actions: Vec<Action>,
     encoded_length: u64,
@@ -150,10 +150,7 @@ pub struct ActionTable {
 
 impl ActionTable {
     pub fn new() -> ActionTable {
-        ActionTable {
-            actions: vec![],
-            encoded_length: 0,
-        }
+        ActionTable { actions: vec![], encoded_length: 0 }
     }
 
     pub fn add(&mut self, action: Action) -> ActionOffset {
@@ -179,9 +176,10 @@ impl ActionTable {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct ActionOffset(u64);
 
+#[derive(Debug)]
 pub struct Action {
     pub kind: ActionKind,
     pub next_action: Option<ActionOffset>,
@@ -217,7 +215,7 @@ impl Action {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum ActionKind {
     Cleanup,
     Catch(TypeInfoId),
@@ -225,6 +223,7 @@ pub enum ActionKind {
     ExceptionSpec(ExceptionSpecOffset),
 }
 
+#[derive(Debug)]
 pub struct TypeInfoTable {
     ttype_encoding: gimli::DwEhPe,
     type_info: Vec<Address>,
@@ -232,10 +231,7 @@ pub struct TypeInfoTable {
 
 impl TypeInfoTable {
     pub fn new(ttype_encoding: gimli::DwEhPe) -> TypeInfoTable {
-        TypeInfoTable {
-            ttype_encoding,
-            type_info: vec![],
-        }
+        TypeInfoTable { ttype_encoding, type_info: vec![] }
     }
 
     pub fn add(&mut self, type_info: Address) -> TypeInfoId {
@@ -259,9 +255,10 @@ impl TypeInfoTable {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct TypeInfoId(u64);
 
+#[derive(Debug)]
 pub struct ExceptionSpecTable {
     specs: Vec<ExceptionSpec>,
     encoded_length: u64,
@@ -269,10 +266,7 @@ pub struct ExceptionSpecTable {
 
 impl ExceptionSpecTable {
     pub fn new() -> ExceptionSpecTable {
-        ExceptionSpecTable {
-            specs: vec![],
-            encoded_length: 0,
-        }
+        ExceptionSpecTable { specs: vec![], encoded_length: 0 }
     }
 
     pub fn add(&mut self, exception_spec: ExceptionSpec) -> ExceptionSpecOffset {
@@ -291,9 +285,10 @@ impl ExceptionSpecTable {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct ExceptionSpecOffset(u64);
 
+#[derive(Debug)]
 pub struct ExceptionSpec(pub Vec<TypeInfoId>);
 
 impl ExceptionSpec {
